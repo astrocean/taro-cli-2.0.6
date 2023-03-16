@@ -95,7 +95,10 @@ function build(appPath, { watch, type = "weapp" /* WEAPP */, envHasBeenSet = fal
         fs.ensureDirSync(buildData.outputDir);
         let quickappJSON;
         if (!isQuickApp) {
-            buildProjectConfig();
+            const shouldBuildProjectConfig= !!builder.hooks.shouldBuildProjectConfig.call(type);
+            if(shouldBuildProjectConfig){
+                buildProjectConfig();
+            }
             yield buildFrameworkInfo();
         }
         else {

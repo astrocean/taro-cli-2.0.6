@@ -12,7 +12,9 @@ class Builder {
     constructor(appPath) {
         this.hooks = {
             beforeBuild: new tapable_1.SyncHook(['config']),
-            afterBuild: new tapable_1.SyncHook(['builder'])
+            afterBuild: new tapable_1.SyncHook(['builder']),
+            beforeEmptyFirst: new tapable_1.SyncWaterfallHook(['outputPath','type','watch']),
+            shouldBuildProjectConfig: new tapable_1.SyncWaterfallHook(['type']),
         };
         this.appPath = appPath;
         this.init();
@@ -33,7 +35,12 @@ class Builder {
         }
     }
     emptyFirst({ watch, type }) {
-        const outputPath = path.join(this.appPath, `${this.config.outputRoot || config_1.default.OUTPUT_DIR}`);
+        let outputPath = path.join(this.appPath, `${this.config.outputRoot || config_1.default.OUTPUT_DIR}`);
+        outputPath=this.hooks.beforeEmptyFirst.call(outputPath,type,watch);
+        if(!outputPath){
+            return;
+        }
+        
         if (!fs.existsSync(outputPath)) {
             fs.ensureDirSync(outputPath);
         }
